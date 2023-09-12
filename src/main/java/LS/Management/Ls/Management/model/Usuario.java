@@ -31,10 +31,10 @@ public class Usuario implements Serializable{
     @Column(unique = true)
     private String email;
 
-    @Size(min = 9, message = "A O telefone deve ter pelo menos 8 caracteres")
+    @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres")
     private String telefone;
 
-    @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")
+    @Size(max = 128, message = "A senha deve ter no máximo 128 caracteres")
     private String senha;
 
     // Construtores
@@ -89,10 +89,6 @@ public class Usuario implements Serializable{
 
     public void setSenha(String senha) {
         this.senha = senha;
-    }
-
-    public String getNome() {
-        return username;
     }
 
     // HashCode and Equals

@@ -12,4 +12,21 @@ public class CustomExceptions  extends RuntimeException{
             super(mensagem);
         }
     }
+
+	public static class SenhaMinimaException extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        public SenhaMinimaException(String mensagem) {
+            super(mensagem);
+        }
+	}
+
+    public static class TelefoneMinimoException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+    
+        public TelefoneMinimoException(String mensagem) {
+            super(mensagem);
+        }
+    }
 }
