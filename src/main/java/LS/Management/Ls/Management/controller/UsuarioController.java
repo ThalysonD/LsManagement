@@ -1,6 +1,9 @@
 package LS.Management.Ls.Management.controller;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,17 +49,20 @@ public class UsuarioController {
 				throw new CustomExceptions.SenhaMinimaException("A senha deve ter pelo menos 6 caracteres");
 			}
 
-			// Adiciona o funcionário ao usuário
-			Funcionario funcionario = new Funcionario();
-			funcionario.setUsername("Funcionario1");
-			funcionario.setSenha("senha123");
-			usuario.adicionarFuncionario(funcionario);
-
 			// Salva o usuário no banco de dados
 			Usuario novoUsuario = usuarioService.salvarUsuario(usuario);
 
+			// Criar a resposta formatada
+			Map<String, Object> response = new HashMap<>();
+			response.put("id", novoUsuario.getId());
+			response.put("username", novoUsuario.getUsername());
+			response.put("email", novoUsuario.getEmail());
+			response.put("telefone", novoUsuario.getTelefone());
+			response.put("senha", novoUsuario.getSenha());
+			response.put("funcionarios", new ArrayList<>());
+
 			// Retorna o usuário criado com um status de sucesso (por exemplo, 201 Created)
-			return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
+			return ResponseEntity.status(HttpStatus.CREATED).body(response);
 		} catch (CustomExceptions.EmailDuplicadoException | CustomExceptions.SenhaMinimaException
 				| CustomExceptions.TelefoneMinimoException e) {
 			// Trata a exceção de email duplicado retornando um status de erro adequado (por
@@ -77,18 +83,59 @@ public class UsuarioController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<Usuario>> listarUsuarios() {
+	public ResponseEntity<List<Map<String, Object>>> listarUsuarios() {
 		List<Usuario> usuarios = usuarioRepository.findAll();
-		usuarios.forEach(usuario -> usuario.setFuncionarios(null));
-		return ResponseEntity.ok(usuarios);
+		List<Map<String, Object>> responseList = new ArrayList<>();
+
+		for (Usuario usuario : usuarios) {
+			Map<String, Object> response = new HashMap<>();
+			response.put("id", usuario.getId());
+			response.put("username", usuario.getUsername());
+			response.put("email", usuario.getEmail());
+			response.put("telefone", usuario.getTelefone());
+			response.put("senha", usuario.getSenha());
+
+			List<Funcionario> funcionarios = usuario.getFuncionarios();
+			List<Map<String, String>> funcionariosList = new ArrayList<>();
+
+			for (Funcionario funcionario : funcionarios) {
+				Map<String, String> funcionarioMap = new HashMap<>();
+				funcionarioMap.put("username", funcionario.getUsername());
+				funcionarioMap.put("senha", funcionario.getSenha());
+				funcionariosList.add(funcionarioMap);
+			}
+
+			response.put("funcionarios", funcionariosList);
+			responseList.add(response);
+		}
+
+		return ResponseEntity.ok(responseList);
 	}
 
 	@GetMapping("/{userId}/funcionarios")
-	public ResponseEntity<List<Funcionario>> listarFuncionarios(@PathVariable Long userId) {
+	public ResponseEntity<Map<String, Object>> listarFuncionarios(@PathVariable Long userId) {
 		Usuario usuario = usuarioRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+		Map<String, Object> response = new HashMap<>();
+		response.put("id", usuario.getId());
+		response.put("username", usuario.getUsername());
+		response.put("email", usuario.getEmail());
+		response.put("telefone", usuario.getTelefone());
+		response.put("senha", usuario.getSenha());
+
 		List<Funcionario> funcionarios = usuario.getFuncionarios();
-		return ResponseEntity.ok(funcionarios);
+		List<Map<String, Object>> funcionariosList = new ArrayList<>();
+
+		for (Funcionario funcionario : funcionarios) {
+			Map<String, Object> funcionarioMap = new HashMap<>();
+			funcionarioMap.put("username", funcionario.getUsername());
+			funcionarioMap.put("senha", funcionario.getSenha());
+			funcionariosList.add(funcionarioMap);
+		}
+
+		response.put("funcionarios", funcionariosList);
+
+		return ResponseEntity.ok(response);
 	}
 }

@@ -22,20 +22,21 @@ public class UsuarioService {
 	}
 
 	public Funcionario adicionarFuncionario(Long usuarioId, Funcionario funcionario) {
-	    Usuario usuario = usuarioRepository.findById(usuarioId)
-	            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+		Usuario usuario = usuarioRepository.findById(usuarioId)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-	    validarFuncionario(funcionario);
+		validarFuncionario(funcionario);
 
-	    if (usuario.getFuncionarios().stream().anyMatch(f -> f.getUsername().equals(funcionario.getUsername()))) {
-	        throw new RuntimeException("Nome do funcionário já em uso para este usuário");
-	    }
+		if (usuario.getFuncionarios().stream().anyMatch(f -> f.getUsername().equals(funcionario.getUsername()))) {
+			throw new RuntimeException("Nome do funcionário já em uso para este usuário");
+		}
 
-	    usuario.adicionarFuncionario(funcionario);
+		usuario.adicionarFuncionario(funcionario);
 
-	    return funcionario;
+		usuarioRepository.save(usuario);
+
+		return funcionario;
 	}
-
 
 	private void validarUsuario(Usuario usuario) throws Exception {
 		if (usuario.getTelefone() == null || usuario.getTelefone().length() < 12) {
